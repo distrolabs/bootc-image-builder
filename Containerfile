@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora:42 AS builder
+FROM registry.fedoraproject.org/fedora:44 AS builder
 RUN dnf install -y git-core golang gpgme-devel libassuan-devel && mkdir -p /build/bib
 COPY bib/go.mod bib/go.sum /build/bib/
 ARG GOPROXY=https://proxy.golang.org,direct
@@ -10,9 +10,11 @@ COPY . /build
 WORKDIR /build
 RUN ./build.sh
 
-FROM registry.fedoraproject.org/fedora:42
+FROM registry.fedoraproject.org/fedora:44
 # Fast-track osbuild so we don't depend on the "slow" Fedora release process to implement new features in bib
 COPY ./group_osbuild-osbuild-fedora.repo /etc/yum.repos.d/
+COPY RPM-GPG-KEY-terra44 /etc/pki/rpm-gpg/RPM-GPG-KEY-terra44
+RUN dnf install --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release -y
 COPY ./package-requires.txt .
 RUN grep -vE '^#' package-requires.txt | xargs dnf install -y && rm -f package-requires.txt && dnf clean all
 COPY --from=builder /build/bin/* /usr/bin/
