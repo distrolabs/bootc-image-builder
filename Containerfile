@@ -13,8 +13,11 @@ RUN ./build.sh
 FROM registry.fedoraproject.org/fedora:44
 # Fast-track osbuild so we don't depend on the "slow" Fedora release process to implement new features in bib
 COPY ./group_osbuild-osbuild-fedora.repo /etc/yum.repos.d/
-COPY RPM-GPG-KEY-terra44 /etc/pki/rpm-gpg/RPM-GPG-KEY-terra44
-RUN dnf install --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release -y
+# Detonation
+#COPY ./RPM-GPG-KEY-terra44 /etc/pki/rpm-gpg/RPM-GPG-KEY-terra44
+RUN dnf -q var releasever && \
+    rpm -E %fedora
+RUN dnf install --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release terra-gpg-keys -y
 COPY ./package-requires.txt .
 RUN grep -vE '^#' package-requires.txt | xargs dnf install -y && rm -f package-requires.txt && dnf clean all
 COPY --from=builder /build/bin/* /usr/bin/
