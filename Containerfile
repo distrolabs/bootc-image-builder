@@ -15,7 +15,7 @@ FROM registry.fedoraproject.org/fedora:44
 COPY ./group_osbuild-osbuild-fedora.repo /etc/yum.repos.d/
 # Detonation
 #COPY ./RPM-GPG-KEY-terra44 /etc/pki/rpm-gpg/RPM-GPG-KEY-terra44
-RUN dnf -q var releasever && \
+RUN dnf --version && \
     rpm -E %fedora
 RUN dnf install --nogpgcheck --repofrompath 'terra,https://repos.fyralabs.com/terra$releasever' terra-release terra-gpg-keys -y
 COPY ./package-requires.txt .
